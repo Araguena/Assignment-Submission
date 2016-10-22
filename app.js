@@ -1,47 +1,65 @@
 (function () {
-  angular.module('LunchApp', [])
+  'use strict';
 
-    .controller('LunchAppController', checkLunch);
+  angular.module('ShoppingListCheckOff', [])
+    .controller('ToBuyController', ToBuyController)
+    .controller('AlreadyBoughtController', AlreadyBoughtController)
+    .service('ShoppingListCheckOffService', ShoppingListCheckOffService);
 
-  function checkLunch($scope) {
-    $scope.lunchItems = '';
-    $scope.result = '';
-    $scope.lunchItemsCount = 0;
+  ToBuyController.$inject = ['ShoppingListCheckOffService'];
+  function ToBuyController(ShoppingListCheckOffService) {
+    var buyService = this;
+    buyService.items = ShoppingListCheckOffService.toBuyItems;
 
-    $scope.checkLunchSize = function () {
-      //Remove empty space and split the string
-      var lunchItemsArray = $scope.lunchItems.replace(/\s+/g, "").split(',');
-
-      //In the split string, leave only non-empty items - if an item between commas is empty string, don't include it
-      var sortedArray = lunchItemsArray.filter(function (item) {
-        return item != '';
-      });
-
-      if (sortedArray.length > 3) {
-        $scope.result = 'Too much!';
-      }
-      else if (sortedArray.length > 0 && sortedArray.length <= 3) {
-        $scope.result = 'Enjoy!';
-      }
-      else {
-        $scope.result = 'Please enter data first';
-      }
-      setColor();
-    };
-
-    //Local function that sets message and input field color depending on the input
-    function setColor() {
-      switch ($scope.result) {
-        case "Enjoy!":
-          $scope.inputBorderColor = "input-border-green";
-          $scope.messageColor = "text-green";
-          break;
-        case 'Too much!':
-        case 'Please enter data first':
-          $scope.inputBorderColor = "input-border-red";
-          $scope.messageColor = "text-red";
-          break;
-      }
+    buyService.buyItem = function (itemIndex) {
+      ShoppingListCheckOffService.buyItem(itemIndex);
     }
   }
+
+  AlreadyBoughtController.$inject = ['ShoppingListCheckOffService'];
+  function AlreadyBoughtController(ShoppingListCheckOffService) {
+    var boughtService = this;
+    boughtService.items = ShoppingListCheckOffService.boughtItems;
+  }
+
+  function ShoppingListCheckOffService() {
+    var service = this;
+
+    service.toBuyItems = [
+      {
+        name: 'wine',
+        quantity: 10
+      },
+      {
+        name: 'cheese',
+        quantity: 5
+      },
+      {
+        name: 'baguette',
+        quantity: 3
+      },
+      {
+        name: 'tomato',
+        quantity: 10
+      },
+      {
+        name: 'olives',
+        quantity: 100
+      }
+    ];
+
+    service.boughtItems = [];
+
+    service.buyItem = function (itemIndex) {
+      var boughtItemObject = service.toBuyItems.splice(itemIndex, 1)[0];
+      var boughtItem = {
+        name: boughtItemObject.name,
+        quantity: boughtItemObject.quantity
+      };
+      service.boughtItems.push(boughtItem);
+      console.log(boughtItemObject);
+      console.log(service.boughtItems);
+    }
+  }
+
 })();
